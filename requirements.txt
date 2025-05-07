@@ -1,7 +1,7 @@
 streamlit
 azure-storage-blob
 openai==0.28
-pinecone-client
+pinecone
 pandas
 gspread
 pdfplumber
