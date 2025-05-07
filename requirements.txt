@@ -8,3 +8,4 @@ pdfplumber
 python-docx
 python-pptx
 oauth2client
+dotenv
