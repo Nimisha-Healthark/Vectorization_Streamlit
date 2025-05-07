@@ -1,0 +1,9 @@
+streamlit
+azure-storage-blob
+openai==0.28
+pinecone-client
+pandas
+gspread
+pdfplumber
+python-docx
+python-pptx
