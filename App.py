@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 # Load .env variables
 load_dotenv()
 
-# # ✅ Load environment variables
+# ✅ Load environment variables
 # AZURE_CONNECTION_STRING = os.getenv("AZURE_CONNECTION_STRING")
 # AZURE_CONTAINER_NAME = os.getenv("AZURE_CONTAINER_NAME")
 # PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
@@ -47,7 +47,7 @@ index = pinecone_client.Index(PINECONE_INDEX_NAME)
 
 openai.api_key = OPENAI_API_KEY
 
-# ✅ Google Sheets setup
+#✅ Google Sheets setup
 # scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 # creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SHEET_CREDENTIALS_PATH, scope)
 # ✅ Setup Google Sheets with credentials from Streamlit Secrets
@@ -183,7 +183,8 @@ def is_file_processed(file_path):
         existing_vectors = index.fetch([chunk_id])  # Use the generated vector ID to check for existence
         
         # Return True if vectors are found, meaning the file has been processed
-        return bool(existing_vectors.get("vectors"))  # If vectors are found, return True
+        #return bool(existing_vectors.get("vectors"))  # If vectors are found, return True
+        return bool(existing_vectors.vectors)  # Instead of existing_vectors.get("vecto
 
     except Exception as e:
         print(f"Pinecone Query Error: {e}")
