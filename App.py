@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 # Load .env variables
 load_dotenv()
 
-# ✅ Load environment variables
+# # ✅ Load environment variables
 # AZURE_CONNECTION_STRING = os.getenv("AZURE_CONNECTION_STRING")
 # AZURE_CONTAINER_NAME = os.getenv("AZURE_CONTAINER_NAME")
 # PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
@@ -310,9 +310,10 @@ if files_to_vectorize:
 else:
     st.success("✅ All eligible files are already vectorized!")
 if files_to_vectorize:
-    with st.spinner("🔄 Processing all new files..."):
-        processed_files = process_new_files()
-        st.success(f"✅ Vectorization completed for {len(processed_files)} new files!")
+    #with st.spinner("🔄 Processing all new files..."):
+        #processed_files = process_new_files()
+        #st.success(f"✅ Vectorization completed for {len(processed_files)} new files!")
+    st.success("STOP")
 else:
     st.warning("⚠️ No new file is detected.")
 
