@@ -1,6 +1,7 @@
 from datetime import datetime
 import gc
 import hashlib
+import json
 import logging
 import streamlit as st
 import os
@@ -36,7 +37,6 @@ AZURE_CONTAINER_NAME = st.secrets["AZURE_CONTAINER_NAME"]
 PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
 PINECONE_INDEX_NAME = st.secrets["PINECONE_INDEX_NAME"]
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
-GOOGLE_SHEET_CREDENTIALS_PATH = st.secrets["GOOGLE_SHEET_CREDENTIALS_PATH"]
 
 # ✅ Initialize Azure Blob & Pinecone
 blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
@@ -48,8 +48,12 @@ index = pinecone_client.Index(PINECONE_INDEX_NAME)
 openai.api_key = OPENAI_API_KEY
 
 # ✅ Google Sheets setup
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SHEET_CREDENTIALS_PATH, scope)
+# scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+# creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SHEET_CREDENTIALS_PATH, scope)
+# ✅ Setup Google Sheets with credentials from Streamlit Secrets
+credentials_info = json.loads(st.secrets["google_sheets"]["credentials"])  # Parse the JSON credentials string
+creds = ServiceAccountCredentials.from_json_keyfile_dict(credentials_info, 
+    ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"])
 client = gspread.authorize(creds)
 sheet = client.open("VectorizationLogs").sheet1  # Replace with your Google Sheet name
 
