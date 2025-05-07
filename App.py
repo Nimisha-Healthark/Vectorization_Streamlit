@@ -22,13 +22,21 @@ from dotenv import load_dotenv
 # Load .env variables
 load_dotenv()
 
-# ✅ Load environment variables
-AZURE_CONNECTION_STRING = os.getenv("AZURE_CONNECTION_STRING")
-AZURE_CONTAINER_NAME = os.getenv("AZURE_CONTAINER_NAME")
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-GOOGLE_SHEET_CREDENTIALS_PATH = os.getenv("CREDENTIALS_PATH")
+# # ✅ Load environment variables
+# AZURE_CONNECTION_STRING = os.getenv("AZURE_CONNECTION_STRING")
+# AZURE_CONTAINER_NAME = os.getenv("AZURE_CONTAINER_NAME")
+# PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+# PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
+# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# GOOGLE_SHEET_CREDENTIALS_PATH = os.getenv("CREDENTIALS_PATH")
+
+# ✅ Load environment variables from Streamlit Secrets
+AZURE_CONNECTION_STRING = st.secrets["AZURE_CONNECTION_STRING"]
+AZURE_CONTAINER_NAME = st.secrets["AZURE_CONTAINER_NAME"]
+PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
+PINECONE_INDEX_NAME = st.secrets["PINECONE_INDEX_NAME"]
+OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+GOOGLE_SHEET_CREDENTIALS_PATH = st.secrets["GOOGLE_SHEET_CREDENTIALS_PATH"]
 
 # ✅ Initialize Azure Blob & Pinecone
 blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
