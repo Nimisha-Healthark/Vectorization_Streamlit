@@ -3,6 +3,7 @@ import gc
 import hashlib
 import json
 import logging
+import pytz
 import streamlit as st
 import os
 import io
@@ -153,7 +154,12 @@ def log_to_google_sheets_batch(logs):
         unique_files = list(set(log[0] for log in logs))  # Only file names
         
         # Get the current timestamp for logging
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        #current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Define the time zone (e.g., UTC)
+        timezone = pytz.timezone('UTC')
+
+        # Get the current time in the specified time zone
+        current_time = datetime.now(timezone).strftime("%Y-%m-%d %H:%M:%S")
         
         # Prepare formatted logs with timestamp
         formatted_logs = [[file_name, "Success", current_time] for file_name in unique_files]  # Include timestamp
