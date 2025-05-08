@@ -310,10 +310,9 @@ if files_to_vectorize:
 else:
     st.success("✅ All eligible files are already vectorized!")
 if files_to_vectorize:
-    #with st.spinner("🔄 Processing all new files..."):
-        #processed_files = process_new_files()
-        #st.success(f"✅ Vectorization completed for {len(processed_files)} new files!")
-    st.success("STOP")
+    with st.spinner("🔄 Processing all new files..."):
+        processed_files = process_new_files()
+        st.success(f"✅ Vectorization completed for {len(processed_files)} new files!")
 else:
     st.warning("⚠️ No new file is detected.")
 
