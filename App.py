@@ -109,7 +109,7 @@ def extract_text_from_file(file_path, blob_data):
 
     elif file_path.endswith(".pptx"):
         try:
-            ppt_stream = io.BytesIO(blob_data)
+          with io.BytesIO(blob_data) as ppt_stream:
     
             # Ensure it's a valid zip (i.e., valid pptx file)
             zipfile.ZipFile(ppt_stream).testzip()
