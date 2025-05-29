@@ -108,16 +108,19 @@ def extract_text_from_file(file_path, blob_data):
                 all_pages_data.append({"page_num": page_num, "text": " ".join(word_buffer)})
 
     elif file_path.endswith(".pptx"):
-        with io.BytesIO(blob_data) as ppt_stream:
-            ppt = Presentation(ppt_stream)
-            for page_num, slide in enumerate(ppt.slides, start=1):
-                slide_text = ""
-                for shape in slide.shapes:
-                    if hasattr(shape, "text"):
-                        slide_text += shape.text + "\n"
-                if slide_text.strip():
-                    all_pages_data.append({"page_num": page_num, "text": slide_text.strip()})
-
+        try:
+            with io.BytesIO(blob_data) as ppt_stream:
+                ppt = Presentation(ppt_stream)
+                for page_num, slide in enumerate(ppt.slides, start=1):
+                    slide_text = ""
+                    for shape in slide.shapes:
+                        if hasattr(shape, "text"):
+                            slide_text += shape.text + "\n"
+                    if slide_text.strip():
+                        all_pages_data.append({"page_num": page_num, "text": slide_text.strip()})
+        except:
+            all_pages_data=None
+            
     return all_pages_data
 
 # Chunk the extracted text into check✅
@@ -290,9 +293,10 @@ def process_new_files():
             blob_data = blob_client.download_blob().readall()
 
             extracted_data = extract_text_from_file(file_path, blob_data)
-            store_vectors(file_path, extracted_data)
-
-            new_files.append(file_path)
+            if extracted_data not None:
+                store_vectors(file_path, extracted_data)
+    
+                new_files.append(file_path)
 
     return new_files
 
