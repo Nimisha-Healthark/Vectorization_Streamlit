@@ -293,7 +293,7 @@ def process_new_files():
             blob_data = blob_client.download_blob().readall()
 
             extracted_data = extract_text_from_file(file_path, blob_data)
-            if extracted_data not None:
+            if extracted_data is not None:
                 store_vectors(file_path, extracted_data)
     
                 new_files.append(file_path)
