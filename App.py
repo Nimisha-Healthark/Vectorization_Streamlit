@@ -109,19 +109,28 @@ def extract_text_from_file(file_path, blob_data):
 
     elif file_path.endswith(".pptx"):
         try:
-            with io.BytesIO(blob_data) as ppt_stream:
-                ppt = Presentation(ppt_stream)
-                for page_num, slide in enumerate(ppt.slides, start=1):
-                    slide_text = ""
-                    for shape in slide.shapes:
-                        if hasattr(shape, "text"):
-                            slide_text += shape.text + "\n"
-                    if slide_text.strip():
-                        all_pages_data.append({"page_num": page_num, "text": slide_text.strip()})
-        except:
-            all_pages_data=None
-            
-    return all_pages_data
+            ppt_stream = io.BytesIO(blob_data)
+    
+            # Ensure it's a valid zip (i.e., valid pptx file)
+            zipfile.ZipFile(ppt_stream).testzip()
+            ppt_stream.seek(0)  # Reset pointer after test
+    
+            ppt = Presentation(ppt_stream)
+            for page_num, slide in enumerate(ppt.slides, start=1):
+                slide_text = ""
+                for shape in slide.shapes:
+                    if hasattr(shape, "text"):
+                        slide_text += shape.text + "\n"
+                if slide_text.strip():
+                    all_pages_data.append({"page_num": page_num, "text": slide_text.strip()})
+        except zipfile.BadZipFile:
+            print(f"❌ Invalid .pptx file: {file_path} (not a zip)")
+            all_pages_data = None
+        except Exception as e:
+            print(f"⚠️ Error reading .pptx: {file_path} - {e}")
+            all_pages_data = None
+                
+        return all_pages_data
 
 # Chunk the extracted text into check✅
 def chunk_text_for_openai(text, max_tokens=4096):
