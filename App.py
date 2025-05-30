@@ -88,6 +88,7 @@ def extract_text_from_file(file_path, blob_data):
                         all_pages_data.append({"page_num": page_num, "text": page_text})
         except:
             #logs.append([file_path, "N/A", "Failure", "Currepted File"])
+            print(f"⚠️ Error reading .PDF: {file_path} - {e}")
             all_pages_data=None
             
 
@@ -113,6 +114,7 @@ def extract_text_from_file(file_path, blob_data):
                     all_pages_data.append({"page_num": page_num, "text": " ".join(word_buffer)})
         except:
             #logs.append([file_path, "N/A", "Failure", "Currepted File"])
+            print(f"⚠️ Error reading .DOCX: {file_path} - {e}")
             all_pages_data=None
 
     elif file_path.endswith(".pptx"):
@@ -157,7 +159,7 @@ def chunk_text_for_openai(text, max_tokens=4096):
     return chunks
 
 # Log Vectorization in Google sheet
-def log_to_google_sheets_batch(logs):
+def log_to_google_sheets_batch(logs,flag=0):
     """Batch logging to Google Sheets with only unique file names and timestamps."""
     if not logs:
         st.warning("⚠️ No logs to write to Google Sheets.")
@@ -176,7 +178,10 @@ def log_to_google_sheets_batch(logs):
         current_time = datetime.now(timezone).strftime("%Y-%m-%d %H:%M:%S")
         
         # Prepare formatted logs with timestamp
-        formatted_logs = [[file_name, "Success", current_time] for file_name in unique_files]  # Include timestamp
+        if flag==1:
+            formatted_logs = [[file_name, "Fail", current_time] for file_name in unique_files]  # Include timestamp
+        else:
+            formatted_logs = [[file_name, "Success", current_time] for file_name in unique_files]  # Include timestamp
         
         # Print logs for debugging
         st.write("📝 Logs Ready to Write:", formatted_logs)
@@ -291,23 +296,31 @@ def store_vectors(file_path, extracted_data):
         logging.info(f"Finished processing {file_path}")
         
 # MAIN function that call all sub function and do vectorization✅   
-def process_new_files():
+def process_new_files(file_list):
     """Check for new files, extract text, vectorize, and store logs."""
-    blob_list = container_client.list_blobs()
     new_files = []
+    elogs=[]
+    for file_path in file_list:
+        #debug print("--------------------------------------------------------")
+        #debug print("Face 1 -> ",file_path)
+        if file_path.endswith((".pdf", ".docx", ".pptx")):
+            #debug print("Face 2 -> ",file_path)
+            try:
+                blob_client = container_client.get_blob_client(file_path)
+                blob_data = blob_client.download_blob().readall()
 
-    for blob in blob_list:
-        file_path = blob.name.strip()
-
-        if file_path.endswith((".pdf", ".docx", ".pptx")) and not is_file_processed(file_path):
-            blob_client = container_client.get_blob_client(file_path)
-            blob_data = blob_client.download_blob().readall()
-
-            extracted_data = extract_text_from_file(file_path, blob_data)
-            if extracted_data is not None:
-                store_vectors(file_path, extracted_data)
-    
-                new_files.append(file_path)
+                extracted_data = extract_text_from_file(file_path, blob_data)
+                #debug print("Face 3 extracted data -> ",extracted_data)
+                if extracted_data is not None and extracted_data != []:
+                    store_vectors(file_path, extracted_data)
+                    new_files.append(file_path)
+                    #debug print("Face 4 stored -> ",file_path)
+                else:
+                    elogs.append([file_path, "Fail", ""])
+            except Exception as e:
+                print(f"⚠️ Error processing {file_path}: {e}")
+    if elogs:
+        log_to_google_sheets_batch(elogs,1)
     return new_files
 
 # ✅ Streamlit UI
@@ -332,7 +345,7 @@ else:
     st.success("✅ All eligible files are already vectorized!")
 if files_to_vectorize:
     with st.spinner("🔄 Processing all new files..."):
-        processed_files = process_new_files()
+        processed_files = process_new_files(files_to_vectorize)
         st.success(f"✅ Vectorization completed for {len(processed_files)} new files!")
 else:
     st.warning("⚠️ No new file is detected.")
