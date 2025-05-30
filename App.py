@@ -23,7 +23,6 @@ from dotenv import load_dotenv
 
 # Load .env variables
 load_dotenv()
-logs = []
 
 # # ✅ Load environment variables
 # AZURE_CONNECTION_STRING = os.getenv("AZURE_CONNECTION_STRING")
@@ -89,7 +88,7 @@ def extract_text_from_file(file_path, blob_data):
                         all_pages_data.append({"page_num": page_num, "text": page_text})
                 return all_pages_data
         except:
-            logs.append([file_path, "N/A", "Failure", "Currepted File"])
+            #logs.append([file_path, "N/A", "Failure", "Currepted File"])
             all_pages_data=None
             return all_pages_data
             
@@ -116,7 +115,7 @@ def extract_text_from_file(file_path, blob_data):
                     all_pages_data.append({"page_num": page_num, "text": " ".join(word_buffer)})
                     return all_pages_data
         except:
-            logs.append([file_path, "N/A", "Failure", "Currepted File"])
+            #logs.append([file_path, "N/A", "Failure", "Currepted File"])
             all_pages_data=None
             return all_pages_data
 
@@ -134,7 +133,7 @@ def extract_text_from_file(file_path, blob_data):
             return all_pages_data
         except Exception as e:
             print(f"⚠️ Error reading .pptx: {file_path} - {e}")
-            logs.append([file_path, "N/A", "Failure", "Currepted File"])
+            #logs.append([file_path, "N/A", "Failure", "Currepted File"])
             all_pages_data = None
             return all_pages_data    
     
@@ -225,7 +224,7 @@ def store_vectors(file_path, extracted_data):
 
     all_chunks = []
     metadata_list = []
-    
+    logs = []
 
     try:
         # ✅ Ensure the file is not already processed by checking its status
