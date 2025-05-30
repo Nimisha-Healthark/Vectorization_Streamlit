@@ -1,6 +1,5 @@
 from datetime import datetime
 import gc
-import zipfile
 import hashlib
 import json
 import logging
@@ -49,10 +48,10 @@ index = pinecone_client.Index(PINECONE_INDEX_NAME)
 
 openai.api_key = OPENAI_API_KEY
 
-#✅ Google Sheets setup
+# #✅ Google Sheets setup
 # scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 # creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SHEET_CREDENTIALS_PATH, scope)
-# ✅ Setup Google Sheets with credentials from Streamlit Secrets
+#✅ Setup Google Sheets with credentials from Streamlit Secrets
 credentials_info = json.loads(st.secrets["google_sheets"]["credentials"])  # Parse the JSON credentials string
 creds = ServiceAccountCredentials.from_json_keyfile_dict(credentials_info, 
     ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"])
@@ -81,40 +80,48 @@ def extract_text_from_file(file_path, blob_data):
     all_pages_data = []
 
     if file_path.endswith(".pdf"):
-        with pdfplumber.open(io.BytesIO(blob_data)) as pdf:
-            for page_num, page in enumerate(pdf.pages, start=1):
-                page_text = page.extract_text()
-                if page_text:
-                    all_pages_data.append({"page_num": page_num, "text": page_text})
+        try:
+            with pdfplumber.open(io.BytesIO(blob_data)) as pdf:
+                for page_num, page in enumerate(pdf.pages, start=1):
+                    page_text = page.extract_text()
+                    if page_text:
+                        all_pages_data.append({"page_num": page_num, "text": page_text})
+                        return all_pages_data
+        except:
+            logs.append([file_path, "N/A", "Failure", "Currepted File"])
+            all_pages_data=None
+            return all_pages_data
+            
 
     elif file_path.endswith(".docx"):
-        with io.BytesIO(blob_data) as doc_stream:
-            doc = Document(doc_stream)
-            words_per_page = 250
-            word_buffer = []
-            page_num = 1
+        try:
+            with io.BytesIO(blob_data) as doc_stream:
+                doc = Document(doc_stream)
+                words_per_page = 250
+                word_buffer = []
+                page_num = 1
 
-            for para in doc.paragraphs:
-                words = para.text.strip().split()
-                if words:
-                    word_buffer.extend(words)
+                for para in doc.paragraphs:
+                    words = para.text.strip().split()
+                    if words:
+                        word_buffer.extend(words)
 
-                    if len(word_buffer) >= words_per_page:
-                        all_pages_data.append({"page_num": page_num, "text": " ".join(word_buffer)})
-                        word_buffer = []
-                        page_num += 1
+                        if len(word_buffer) >= words_per_page:
+                            all_pages_data.append({"page_num": page_num, "text": " ".join(word_buffer)})
+                            word_buffer = []
+                            page_num += 1
 
-            if word_buffer:
-                all_pages_data.append({"page_num": page_num, "text": " ".join(word_buffer)})
+                if word_buffer:
+                    all_pages_data.append({"page_num": page_num, "text": " ".join(word_buffer)})
+                    return all_pages_data
+        except:
+            logs.append([file_path, "N/A", "Failure", "Currepted File"])
+            all_pages_data=None
+            return all_pages_data
 
     elif file_path.endswith(".pptx"):
         try:
           with io.BytesIO(blob_data) as ppt_stream:
-    
-            # Ensure it's a valid zip (i.e., valid pptx file)
-            zipfile.ZipFile(ppt_stream).testzip()
-            ppt_stream.seek(0)  # Reset pointer after test
-    
             ppt = Presentation(ppt_stream)
             for page_num, slide in enumerate(ppt.slides, start=1):
                 slide_text = ""
@@ -123,14 +130,13 @@ def extract_text_from_file(file_path, blob_data):
                         slide_text += shape.text + "\n"
                 if slide_text.strip():
                     all_pages_data.append({"page_num": page_num, "text": slide_text.strip()})
-        except zipfile.BadZipFile:
-            print(f"❌ Invalid .pptx file: {file_path} (not a zip)")
-            all_pages_data = None
+                    return all_pages_data
         except Exception as e:
             print(f"⚠️ Error reading .pptx: {file_path} - {e}")
+            logs.append([file_path, "N/A", "Failure", "Currepted File"])
             all_pages_data = None
-                
-        return all_pages_data
+            return all_pages_data    
+    
 
 # Chunk the extracted text into check✅
 def chunk_text_for_openai(text, max_tokens=4096):
@@ -208,7 +214,8 @@ def is_file_processed(file_path):
     except Exception as e:
         print(f"Pinecone Query Error: {e}")
         return False     
-        
+ 
+logs = []       
 # STORE IN PINECONE✅
 def store_vectors(file_path, extracted_data):
     """Store vectorized text in Pinecone with chunking per page."""
@@ -217,7 +224,7 @@ def store_vectors(file_path, extracted_data):
 
     all_chunks = []
     metadata_list = []
-    logs = []
+    
 
     try:
         # ✅ Ensure the file is not already processed by checking its status
@@ -306,7 +313,6 @@ def process_new_files():
                 store_vectors(file_path, extracted_data)
     
                 new_files.append(file_path)
-
     return new_files
 
 # ✅ Streamlit UI
