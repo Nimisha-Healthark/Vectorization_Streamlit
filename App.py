@@ -86,11 +86,9 @@ def extract_text_from_file(file_path, blob_data):
                     page_text = page.extract_text()
                     if page_text:
                         all_pages_data.append({"page_num": page_num, "text": page_text})
-                return all_pages_data
         except:
             #logs.append([file_path, "N/A", "Failure", "Currepted File"])
             all_pages_data=None
-            return all_pages_data
             
 
     elif file_path.endswith(".docx"):
@@ -113,11 +111,9 @@ def extract_text_from_file(file_path, blob_data):
 
                 if word_buffer:
                     all_pages_data.append({"page_num": page_num, "text": " ".join(word_buffer)})
-                    return all_pages_data
         except:
             #logs.append([file_path, "N/A", "Failure", "Currepted File"])
             all_pages_data=None
-            return all_pages_data
 
     elif file_path.endswith(".pptx"):
         try:
@@ -130,12 +126,11 @@ def extract_text_from_file(file_path, blob_data):
                         slide_text += shape.text + "\n"
                 if slide_text.strip():
                     all_pages_data.append({"page_num": page_num, "text": slide_text.strip()})
-            return all_pages_data
         except Exception as e:
             print(f"⚠️ Error reading .pptx: {file_path} - {e}")
             #logs.append([file_path, "N/A", "Failure", "Currepted File"])
             all_pages_data = None
-            return all_pages_data    
+    return all_pages_data    
     
 
 # Chunk the extracted text into check✅
