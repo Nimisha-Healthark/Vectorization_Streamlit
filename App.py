@@ -23,6 +23,7 @@ from dotenv import load_dotenv
 
 # Load .env variables
 load_dotenv()
+logs = []
 
 # # ✅ Load environment variables
 # AZURE_CONNECTION_STRING = os.getenv("AZURE_CONNECTION_STRING")
@@ -215,7 +216,7 @@ def is_file_processed(file_path):
         print(f"Pinecone Query Error: {e}")
         return False     
  
-logs = []       
+       
 # STORE IN PINECONE✅
 def store_vectors(file_path, extracted_data):
     """Store vectorized text in Pinecone with chunking per page."""
